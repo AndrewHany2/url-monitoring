@@ -1,4 +1,6 @@
 require('dotenv').config();
+const { Buffer } = require('buffer');
+const decodedPassword = Buffer.from(process.env.SMTP_PASSWORD, 'base64').toString('utf-8');
 
 const keys = {
   jwtSecret: '123dasdasfsdfjkashdfkjewr',
@@ -7,7 +9,7 @@ const keys = {
   emailCredentials: {
     host: process.env.SMTP_SERVER,
     auth: process.env.SMTP_AUTH,
-    password: process.env.SMTP_PASSWORD,
+    password: decodedPassword,
     port: process.env.SMTP_PORT,
     email: process.env.SMTP_EMAIL
   },
