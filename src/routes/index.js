@@ -2,7 +2,7 @@ const userRouter = require('./user.router.js');
 const checkRouter = require('./check.router.js');
 const authRouter = require('./auth.router.js');
 const { ErrorHandler } = require('../middlewares');
-const swaggerDocs = require('./swagger.js');
+const swaggerDocs = require('./swagger');
 
 const addRoutes = (app) => {
   app.use('/api/user', userRouter);
