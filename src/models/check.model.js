@@ -21,6 +21,6 @@ const urlCheckSchema = new mongoose.Schema({
   tags: [String],
   ignoreSSL: { type: Boolean, default: false },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('URLCheck', urlCheckSchema);

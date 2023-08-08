@@ -15,6 +15,6 @@ const reportSchema = new mongoose.Schema({
       responseTime: { type: Number, required: true }
     }
   ]
-}, { timestamp: true });
+}, { timestamps: true });
 
 module.exports = mongoose.model('Report', reportSchema);
