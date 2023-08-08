@@ -21,8 +21,8 @@ const checkValidationSchema = Joi.object({
   url: Joi.string().required(),
   protocol: Joi.string().valid('HTTP', 'HTTPS', 'TCP').required(),
   path: Joi.string().allow(''),
-  port: Joi.string().allow(''),
-  webhook: Joi.number().allow(null),
+  port: Joi.number().allow(null),
+  webhook: Joi.string().allow(null, ''),
   timeout: Joi.number().allow(null),
   interval: Joi.number().allow(null),
   threshold: Joi.number().allow(null),
@@ -30,12 +30,7 @@ const checkValidationSchema = Joi.object({
     username: Joi.string().allow(''),
     password: Joi.string().allow('')
   },
-  httpHeaders: [
-    {
-      key: Joi.string().required(),
-      value: Joi.string().required()
-    }
-  ],
+  httpHeaders: Joi.array().items(Joi.object().unknown(true)),
   assert: {
     statusCode: Joi.number().allow(null)
   },

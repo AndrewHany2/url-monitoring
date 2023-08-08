@@ -18,7 +18,7 @@ const authMiddleware = async (req, res, next) => {
       return next(err);
     }
     const user = await userModel.findOne({
-      _id: new mongoose.Types.ObjectId(tokenCheck.id)
+      _id: new mongoose.Types.ObjectId(tokenCheck.userId)
     });
     if (!user) {
       err.message = 'Invalid token user';

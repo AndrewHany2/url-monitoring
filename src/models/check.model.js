@@ -14,12 +14,7 @@ const urlCheckSchema = new mongoose.Schema({
     username: { type: String },
     password: { type: String }
   },
-  httpHeaders: [
-    {
-      key: { type: String, required: true },
-      value: { type: String, required: true }
-    }
-  ],
+  httpHeaders: [{ type: Object }],
   assert: {
     statusCode: { type: Number }
   },
