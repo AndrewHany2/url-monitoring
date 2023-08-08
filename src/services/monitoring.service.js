@@ -31,21 +31,23 @@ async function pingUrl (check) {
         if (response.status !== assert.statusCode) {
           // return mark ping down
           await markReport(check, false);
+          return true;
         }
       } else {
         if (response.status !== 200) {
           // return mark ping down
           await markReport(check, false);
+          return true;
         }
       }
       // return mark ping up
       await markReport(check, true);
-    }).catch(async error => {
+    }).catch(async () => {
       const endTime = new Date();
       const responseTime = endTime - startTime;
       check.responseTime = responseTime;
       await markReport(check, false);
-      console.log(error);
+      return true;
     });
   }
 }

@@ -21,8 +21,6 @@ async function markUp (oldReport, check) {
   const availability = (uptime / (uptime + oldReport.downtime)) * 100;
   oldReport.history.push({ timestamp: new Date(), status: 'UP', responseTime: check.responseTime });
   return {
-    ...oldReport,
-    urlCheck: check._id,
     status: 'UP',
     availability,
     outages: oldReport.outages,
@@ -35,11 +33,9 @@ async function markUp (oldReport, check) {
 
 async function markDown (oldReport, check) {
   const downtime = oldReport.downtime + check.interval;
-  const availability = (check.uptime / (check.uptime + downtime)) * 100;
+  const availability = (oldReport.uptime / (oldReport.uptime + downtime)) * 100;
   oldReport.history.push({ timestamp: new Date(), status: 'DOWN', responseTime: check.responseTime });
   return {
-    ...oldReport,
-    urlCheck: check._id,
     status: 'DOWN',
     availability,
     outages: oldReport.outages + 1,
@@ -51,19 +47,17 @@ async function markDown (oldReport, check) {
 }
 
 async function markReport (check, isUp) {
-  let report = await Report.findOne({ urlCheck: check._id });
+  const report = await Report.findOne({ urlCheck: check._id });
   if (!report) {
     await createNewReport({ check, isUp });
     return true;
   } else if (isUp) {
-    const updatedReport = markUp(report, check);
-    report = updatedReport;
-    await report.save();
+    const updatedReport = await markUp(report, check);
+    await Report.updateOne({ _id: report._id }, { ...updatedReport });
     return true;
   } else {
-    const updatedReport = markDown(report, check);
-    report = updatedReport;
-    await report.save();
+    const updatedReport = await markDown(report, check);
+    await Report.updateOne({ _id: report._id }, { $set: updatedReport });
     return true;
   }
 }
