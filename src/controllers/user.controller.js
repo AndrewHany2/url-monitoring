@@ -28,7 +28,7 @@ async function Register (req, res, next) {
     await NotificationService.Send(userCheck.email, 'Verify Email', message);
     return res.status(201).json('Account created, please verify your email');
   } catch (error) {
-    next(error);
+    return next(error);
   }
 }
 
@@ -48,7 +48,7 @@ async function VerifyEmail (req, res, next) {
     await tokenModel.deleteOne({ _id: token._id });
     return res.status(200).json('Email Verified');
   } catch (error) {
-    res.status(400).send('An error occured');
+    return res.status(400).send('An error occured');
   }
 }
 module.exports = {

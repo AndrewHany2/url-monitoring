@@ -14,7 +14,9 @@ const reportSchema = new mongoose.Schema({
       status: { type: String, enum: ['UP', 'DOWN'], required: true },
       responseTime: { type: Number, required: true }
     }
-  ]
-}, { timestamps: true });
+  ],
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+},
+{ timestamps: true });
 
 module.exports = mongoose.model('Report', reportSchema);

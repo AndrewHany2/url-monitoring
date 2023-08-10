@@ -18,7 +18,7 @@ module.exports.Login = async (req, res, next) => {
       return res.status(401).json({ error: 'Email not verified' });
     }
     const token = await generateToken(user._id);
-    res.status(200).json({ message: 'Login successful', token });
+    return res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
     return next(error);
   }
