@@ -9,6 +9,7 @@ const app = express();
 app.use(bodyParser.json());
 addRoutes(app);
 
+require('./src/cron');
 // Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

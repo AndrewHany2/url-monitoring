@@ -72,5 +72,7 @@ const { checkValidationSchema } = require('../middlewares/validations');
  *        description: Invalid email or password
 */
 router.post('/', validationMiddleware(checkValidationSchema), authMiddleware, CheckController.CreateUrlCheck);
+router.put('/update/:id', validationMiddleware(checkValidationSchema), authMiddleware, CheckController.UpdateUrlCheck);
+router.post('/delete', validationMiddleware(checkValidationSchema), authMiddleware, CheckController.CreateUrlCheck);
 
 module.exports = router;
