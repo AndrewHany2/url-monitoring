@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const taskModel = require('../models/task.model');
 const checkService = require('./urlCheck.service');
 const cron = require('node-cron');
@@ -73,19 +74,23 @@ class Monitor {
     await this.scheduleTask({ urlCheck, task, isNew: false });
   }
 
-  async deleteTask (urlCheck) {
-    const task = await taskModel.findOne({ urlCheckId: urlCheck._id });
-    if (task && task.isActive) {
-      task.isActive = false;
-      await task.save();
-      const index = this.tasks.findIndex(t => t.name === task.taskId);
-      if (index !== -1) {
-        this.tasks[index].stop();
-        this.tasks.splice(index, 1);
-        return true;
+  async deleteTask (urlCheckId) {
+    try {
+      const task = await taskModel.findOne({ urlCheckId: new mongoose.Types.ObjectId(urlCheckId) });
+      if (task && task.isActive) {
+        task.isActive = false;
+        await task.save();
+        const index = this.tasks.findIndex(t => t.name === task.taskId);
+        if (index !== -1) {
+          this.tasks[index].stop();
+          this.tasks.splice(index, 1);
+          return true;
+        }
       }
+      return false;
+    } catch (error) {
+      return new Error(error);
     }
-    return false;
   }
 }
 module.exports = { Monitor };
