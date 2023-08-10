@@ -11,7 +11,8 @@ async function createNewReport (params) {
     downtime: 0,
     uptime: 0,
     responseTime: 0,
-    history: { timestamp: new Date(), status, responseTime: check.responseTime }
+    history: { timestamp: new Date(), status, responseTime: check.responseTime },
+    createdBy: check.createdBy
   });
   return report;
 }

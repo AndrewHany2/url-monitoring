@@ -4,10 +4,19 @@ const { default: mongoose } = require('mongoose');
 
 module.exports.GetAllUrlCheck = async (req, res, next) => {
   try {
-    const urlChecks = await Check.find({ createdBy: new mongoose.Types.ObjectId(req.user.id) });
-    res.status(201).json(urlChecks);
+    const { tags } = req.query;
+    const filter = {};
+    if (tags) {
+      const tagsArray = tags.split(',');
+      if (tagsArray && tagsArray.length > 0) {
+        filter.tags = { $in: tagsArray };
+      }
+    }
+    filter.createdBy = new mongoose.Types.ObjectId(req.user.id);
+    const urlChecks = await Check.find({ ...filter });
+    return res.status(201).json(urlChecks);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return next(error);
   }
 };
 
@@ -17,9 +26,9 @@ module.exports.GetUrlCheck = async (req, res, next) => {
       _id: new mongoose.Types.ObjectId(req.params.id),
       createdBy: new mongoose.Types.ObjectId(req.user.id)
     });
-    res.status(201).json(urlCheck);
+    return res.status(201).json(urlCheck);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return next(error);
   }
 };
 
@@ -29,11 +38,11 @@ module.exports.CreateUrlCheck = async (req, res, next) => {
     const cleanedUrl = req.body.url.replace(/^(https?|http):\/\//, '');
     const newCheck = await Check.create({ ...req.body, url: cleanedUrl, createdBy: userId });
     if (newCheck) {
-      monitor.scheduleTask(newCheck, null, true);
+      monitor.scheduleTask({ urlCheck: newCheck, task: null, isNew: true });
     }
-    res.status(201).json(newCheck);
+    return res.status(201).json(newCheck);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return next(error);
   }
 };
 
@@ -52,9 +61,9 @@ module.exports.UpdateUrlCheck = async (req, res, next) => {
     if (newCheck && newCheck.modifiedCount === 1) {
       monitor.rescheduleTask({ ...req.body, _id: urlCheckId });
     }
-    res.status(201).json(newCheck);
+    return res.status(201).json(newCheck);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return next(error);
   }
 };
 
@@ -64,9 +73,8 @@ module.exports.DeleteUrlCheck = async (req, res, next) => {
     const deleted = monitor.deleteTask(urlCheckId);
     if (!deleted) res.status(500).json({ error: 'Couldnt delete the url check' });
     await Check.deleteOne({ _id: urlCheckId });
-    res.status(201).json('succesfully deleted');
-    res.status(201);
+    return res.status(201).json('succesfully deleted');
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    return next(error);
   }
 };
