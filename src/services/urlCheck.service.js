@@ -1,7 +1,20 @@
 const axios = require('axios');
 const https = require('https');
 const { markReport } = require('./report.service');
-const net = require('net');
+const http = require('http');
+
+function arrayToHeadersObject (arr) {
+  const headersObject = {};
+
+  arr.forEach((pair) => {
+    if (pair && pair.length === 2) {
+      const [key, value] = pair;
+      headersObject[key] = value;
+    }
+  });
+
+  return headersObject;
+}
 
 async function pingUrl (check) {
   const { url, protocol, path, port, timeout, ignoreSSL, authentication, httpHeaders, assert } = check;
@@ -65,35 +78,57 @@ async function pingUrl (check) {
 }
 
 async function pingUrlWithTCP (check) {
-  const { url, port, timeout } = check;
+  const { url, port, timeout, httpHeaders, assert } = check;
+  const requestOptions = {
+    hostname: url,
+    port,
+    method: 'HEAD',
+    headers: arrayToHeadersObject(httpHeaders)
+  };
   return new Promise((resolve, reject) => {
     const startTime = new Date();
-    const client = net.connect({ host: url, port }, () => {
-      // If the connection is successful, the site is available
-      client.end();
+    const req = http.request(requestOptions, (res) => {
+      if (assert && assert.statusCode) {
+        if (res.status !== assert.statusCode) {
+          // return mark ping down
+          const endTime = new Date();
+          const responseTime = endTime - startTime;
+          check.responseTime = responseTime;
+          resolve(false);
+        }
+      } else {
+        if (res.status !== 200) {
+          const endTime = new Date();
+          const responseTime = endTime - startTime;
+          check.responseTime = responseTime;
+          // return mark ping down
+          resolve(false);
+        }
+      }
       const endTime = new Date();
       const responseTime = endTime - startTime;
       check.responseTime = responseTime;
       resolve(true);
     });
 
-    client.on('error', (err) => {
-      console.log(err);
-      // If an error occurs, the site is not available
+    req.on('error', (err) => {
       const endTime = new Date();
       const responseTime = endTime - startTime;
       check.responseTime = responseTime;
       resolve(false);
+      console.log(err);
     });
 
     // Set a custom timeout for the connection attempt
-    client.setTimeout(timeout, () => {
-      client.destroy(); // Close the connection
+    req.setTimeout(timeout, () => {
       const endTime = new Date();
       const responseTime = endTime - startTime;
       check.responseTime = responseTime;
+      req.abort(); // Abort the request
       resolve(false);
     });
+
+    req.end();
   });
 }
 
