@@ -36,7 +36,11 @@ module.exports.CreateUrlCheck = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const cleanedUrl = req.body.url.replace(/^(https?|http):\/\//, '');
-    const newCheck = await Check.create({ ...req.body, url: cleanedUrl, createdBy: userId });
+    let path;
+    if (req.body.path) {
+      path = req.body.path.startsWith('/') ? req.body.path.slice(1) : req.body.path;
+    }
+    const newCheck = await Check.create({ ...req.body, url: cleanedUrl, createdBy: userId, path });
     if (newCheck) {
       monitor.scheduleTask({ urlCheck: newCheck, task: null, isNew: true });
     }
@@ -48,9 +52,12 @@ module.exports.CreateUrlCheck = async (req, res, next) => {
 
 module.exports.UpdateUrlCheck = async (req, res, next) => {
   try {
-    const { url } = req.body;
+    const { url, path } = req.body;
     if (url) {
       req.body.url = req.body.url.replace(/^(https?|http):\/\//, '');
+    }
+    if (path) {
+      req.body.path = req.body.path.startsWith('/') ? req.body.path.slice(1) : req.body.path;
     }
     const urlCheckId = req.params.id;
     const newCheck = await Check.updateOne({ _id: urlCheckId }, {
